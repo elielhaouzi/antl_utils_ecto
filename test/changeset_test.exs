@@ -170,6 +170,72 @@ defmodule AntlUtilsEcto.ChangesetTest do
     end
   end
 
+  describe "validate_required_by/4" do
+    test "the condition match and the field is present" do
+      changeset =
+        %Schema{}
+        |> Ecto.Changeset.cast(
+          %{field_1: "field_1", field_3: "field_3"},
+          [:field_1, :field_2, :field_3]
+        )
+        |> validate_required_by([:field_3], :field_1, fn value -> value == "field_1" end)
+
+      assert changeset.valid?
+    end
+
+    test "the condition match and the field is not present" do
+      changeset =
+        %Schema{}
+        |> Ecto.Changeset.cast(
+          %{field_1: "field_1"},
+          [:field_1, :field_2, :field_3]
+        )
+        |> validate_required_by([:field_3], :field_1, fn value -> value == "field_1" end)
+
+      refute changeset.valid?
+      assert %{field_3: ["can't be blank"]} = errors_on(changeset)
+    end
+
+    test "the condition match and the field is not present with an override message" do
+      changeset =
+        %Schema{}
+        |> Ecto.Changeset.cast(
+          %{field_1: "field_1"},
+          [:field_1, :field_2, :field_3]
+        )
+        |> validate_required_by([:field_3], :field_1, fn value -> value == "field_1" end,
+          message: "can't be blank when field_1 is field_1"
+        )
+
+      refute changeset.valid?
+      assert %{field_3: ["can't be blank when field_1 is field_1"]} = errors_on(changeset)
+    end
+
+    test "the condition does not match and the field is present" do
+      changeset =
+        %Schema{}
+        |> Ecto.Changeset.cast(
+          %{field_1: "value", field_3: "field_3"},
+          [:field_1, :field_2, :field_3]
+        )
+        |> validate_required_by([:field_3], :field_1, fn value -> value == "field_1" end)
+
+      assert changeset.valid?
+    end
+
+    test "the condition does not match and the field is not present" do
+      changeset =
+        %Schema{}
+        |> Ecto.Changeset.cast(
+          %{field_1: "value"},
+          [:field_1, :field_2, :field_3]
+        )
+        |> validate_required_by([:field_3], :field_1, fn value -> value == "field_1" end)
+
+      assert changeset.valid?
+    end
+  end
+
   describe "validate_required_if/4" do
     test "the condition match and the field is present" do
       changeset =
