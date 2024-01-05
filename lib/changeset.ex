@@ -91,6 +91,28 @@ defmodule AntlUtilsEcto.Changeset do
     end
   end
 
+  @spec validate_required_by(Ecto.Changeset.t(), atom | list, atom, (any -> boolean), keyword) ::
+          Ecto.Changeset.t()
+  def validate_required_by(
+        %Ecto.Changeset{} = changeset,
+        fields,
+        conditional_field,
+        fun,
+        opts \\ []
+      )
+      when is_atom(conditional_field) and is_function(fun, 1) do
+    fields = List.wrap(fields)
+    conditional_field_value = get_field(changeset, conditional_field)
+
+    message = Keyword.get(opts, :message, "can't be blank")
+
+    if fun.(conditional_field_value) do
+      changeset |> validate_required(fields, message: message)
+    else
+      changeset
+    end
+  end
+
   @spec validate_required_if(Ecto.Changeset.t(), any, atom, any, keyword) :: Ecto.Changeset.t()
   def validate_required_if(
         %Ecto.Changeset{} = changeset,
