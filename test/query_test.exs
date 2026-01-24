@@ -9,7 +9,7 @@ defmodule AntlUtilsEcto.QueryTest do
   defmodule SchemaWhere do
     use Ecto.Schema
 
-    embedded_schema do
+    schema "schema_where" do
       field(:name, :string)
       field(:start_at, :utc_datetime)
       field(:end_at, :utc_datetime)
@@ -143,7 +143,9 @@ defmodule AntlUtilsEcto.QueryTest do
         SchemaWhere |> EctoQueryUtils.where_period_status(:ended, :start_at, :end_at, datetime)
 
       %{wheres: [where_2]} =
-        from(q in SchemaWhere, where: false or (q.start_at <= ^datetime and q.end_at <= ^datetime))
+        from(q in SchemaWhere,
+          where: false or (q.start_at <= ^datetime and q.end_at <= ^datetime)
+        )
 
       assert Macro.to_string(where_1.expr) == Macro.to_string(where_2.expr)
     end
@@ -286,7 +288,7 @@ defmodule AntlUtilsEcto.QueryTest do
         from(SchemaWhere,
           where:
             like(
-              fragment("JSON_EXTRACT(?, ?)", literal(^"field"), ^"path"),
+              fragment("JSON_EXTRACT(?, ?)", identifier(^"field"), ^"path"),
               ^"%\"value\"%"
             )
         )
@@ -298,7 +300,7 @@ defmodule AntlUtilsEcto.QueryTest do
   describe "json_extract/2 macro" do
     test "produces expected result with literal binaries as args" do
       reference_request =
-        from(SchemaWhere, select: fragment("JSON_EXTRACT(?, ?)", literal(^"left"), ^"right"))
+        from(SchemaWhere, select: fragment("JSON_EXTRACT(?, ?)", identifier(^"left"), ^"right"))
 
       tested_request = from(SchemaWhere, select: EctoQueryUtils.json_extract(:left, "right"))
 
@@ -310,7 +312,7 @@ defmodule AntlUtilsEcto.QueryTest do
       right = "right"
 
       reference_request =
-        from(SchemaWhere, select: fragment("JSON_EXTRACT(?, ?)", literal(^"#{left}"), ^right))
+        from(SchemaWhere, select: fragment("JSON_EXTRACT(?, ?)", identifier(^"#{left}"), ^right))
 
       tested_request = from(SchemaWhere, select: EctoQueryUtils.json_extract(left, right))
 

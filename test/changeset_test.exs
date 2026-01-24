@@ -2443,7 +2443,7 @@ defmodule AntlUtilsEcto.ChangesetTest do
   defmodule SchemaForParameterized do
     use Ecto.Schema
 
-    embedded_schema do
+    schema "schema_for_parameterized" do
       field(:field, ParameterizedTypeTest)
     end
   end
